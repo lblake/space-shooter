@@ -15,7 +15,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var player: SKSpriteNode!
     var scoreLabel: SKLabelNode!
     
-    let possibleEnemies = ["ball", "hammer", "tv"]
+    var possibleEnemies = ["ball", "hammer", "tv"]
     var isGameOver = false
     var gameTimer: Timer?
     
@@ -33,7 +33,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(starfield)
         starfield.zPosition = -1
         
-        player = SKSpriteNode(fileNamed: "player")
+        player = SKSpriteNode(imageNamed: "player")
         player.position = CGPoint(x: 100, y: 384)
         player.physicsBody = SKPhysicsBody(texture: player.texture!, size: player.size)
         player.physicsBody?.contactTestBitMask = 1
@@ -51,7 +51,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.contactDelegate = self
         
         gameTimer = Timer.scheduledTimer(timeInterval: 0.35, target: self, selector: #selector(createEnemy), userInfo: nil, repeats: true)
-
         
         
         
@@ -98,8 +97,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.position = location
     }
     
+    /* Added code to keep the  players from moving the spaceship forward on the x-axis*/
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touch = touches.first else {return}
+        let point = touch.location(in: self.view)
+        
+        var pointX = point.x
+        
+        if pointX > 100 {
+            pointX = 100
+        } else if pointX > 668{
+            pointX = 668
+        }
+        
+        player.position = point
+    }
     
     func didBegin(_ contact: SKPhysicsContact) {
+        let gameOverLabel:SKLabelNode!
         let explosion = SKEmitterNode(fileNamed: "explosion")!
         explosion.position = player.position
         addChild(explosion)
@@ -108,11 +123,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         isGameOver = true
         
-        if isGameOver{
-            for node in children{
-                node.removeFromParent()
-            }
+        /* Added code to remove the enemies when the game ends.
+         Also display "Game Over" label
+        */
+        if isGameOver {
+            possibleEnemies.removeAll()
+            gameOverLabel = SKLabelNode(fontNamed: "Chalkduster")
+            gameOverLabel.position = CGPoint(x: 520, y: 384)
+            gameOverLabel.text = "Game Over!!".uppercased()
+            addChild(gameOverLabel)
         }
-    }
         
+        
+    }
+    
+   
+    
 }
